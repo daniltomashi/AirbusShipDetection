@@ -1,3 +1,5 @@
+# Project files in master branch
+
 # AirbusShipDetection
 
 Data was taken from this competition - https://www.kaggle.com/competitions/airbus-ship-detection/data
