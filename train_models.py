@@ -56,13 +56,14 @@ for i in range(n):
     try:
         # read and resize image
         img = cv.imread('train_v2/'+train_with_ship['ImageId'][i])
-        img = cv.resize(img, (256,256))
+        img = cv.GaussianBlur(img, (3,3), cv.BORDER_DEFAULT)
+        img = cv.resize(img, (160,160))
         img = img.astype(np.uint8)
 
         # decode pixels and take mask
         encoded_pixels = [int(k) for k in train_with_ship['EncodedPixels'][i].split()]
         mask = find_mask(encoded_pixels, 768)
-        mask = cv.resize(mask, (256,256))
+        mask = cv.resize(mask, (160,160))
         imgs_to_segmentation.append(img)
         mask_to_segmentation.append(mask)
 
@@ -72,7 +73,8 @@ for i in range(n):
             y.append(np.array([1,0]))
         else:
             img = cv.imread('train_v2/'+train_without_ship['ImageId'][i])
-            img = cv.resize(img, (256,256))
+            img = cv.GaussianBlur(img, (3,3), cv.BORDER_DEFAULT)
+            img = cv.resize(img, (160,160))
             img = img.astype(np.uint8)
             imgs_to_classification.append(img)
             y.append(np.array([0,1]))
@@ -90,7 +92,7 @@ mask_to_segmentation = np.array(mask_to_segmentation, dtype=np.float16)
 
 
 # compiling two models
-model = get_model((256,256))
+model = get_model((160,160))
 model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), loss=dice_loss, metrics=[dice_coef])
 
 cnn3 = classification_model()
@@ -100,7 +102,7 @@ cnn3.compile(loss='binary_crossentropy', optimizers='adam', metrics=['accuracy']
 
 from sklearn.model_selection import train_test_split
 # splitting data into train and valid groups
-X_segm_train, X_segm_valid, y_segm_train, y_segm_valid = train_test_split(imgs_to_segmentation, mask_to_segmentation.reshape(-1,256,256,1), test_size=0.1, random_state=42)
+X_segm_train, X_segm_valid, y_segm_train, y_segm_valid = train_test_split(imgs_to_segmentation, mask_to_segmentation.reshape(-1,160,160,1), test_size=0.1, random_state=42)
 X_class_train, X_class_valid, y_class_train, y_class_valid = train_test_split(imgs_to_classification, y, test_size=0.2, random_state=42)
 
 
